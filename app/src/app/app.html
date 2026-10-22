@@ -1,0 +1,263 @@
+
+<div class="app-shell">
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-icon">S</div>
+      <div>
+        <strong>StockPilot <span>AI</span></strong>
+        <small>INVENTORY INTELLIGENCE</small>
+      </div>
+    </div>
+
+    <div class="workspace-label">WORKSPACE</div>
+    <nav class="navigation">
+      <a class="nav-item active" href="#dashboard">▦ <span>Dashboard</span></a>
+      <a class="nav-item" href="#inventory">▤ <span>Inventario</span></a>
+      <a class="nav-item" href="#restock">↗ <span>Reposición inteligente</span></a>
+    </nav>
+
+    <div class="sidebar-bottom">
+      <div class="ai-card">
+        <div class="ai-heading">✦ AI INSIGHTS</div>
+        <p>Tu inventario, bajo control. Detecta faltantes antes de que ocurran.</p>
+        <span>● Motor de recomendaciones activo</span>
+      </div>
+      <div class="profile">
+        <div class="avatar">AD</div>
+        <div><strong>Administrador</strong><small>Plan gratuito</small></div>
+      </div>
+    </div>
+  </aside>
+
+  <main class="main-content" id="dashboard">
+    <header class="topbar">
+      <div>
+        <div class="breadcrumb">Workspace / <strong>Dashboard</strong></div>
+        <h1>Control de inventario</h1>
+        <p class="subtitle">Aquí tienes el resumen de tu negocio.</p>
+      </div>
+      <div class="top-actions">
+        <span class="live-status"><span></span> Sistema operativo</span>
+        <button class="button button-dark" (click)="exportCsv()">↓ Exportar CSV</button>
+      </div>
+    </header>
+
+    <section class="welcome-banner">
+      <div>
+        <span class="eyebrow">✦ STOCKPILOT INTELLIGENCE</span>
+        <h2>Buenos días. Vamos a optimizar tu inventario.</h2>
+        <p>Estas son las oportunidades que hemos detectado en tu stock.</p>
+      </div>
+      <div class="banner-decoration">✳</div>
+    </section>
+
+    <section class="metrics">
+      <article class="metric-card">
+        <div class="metric-top"><span>Total de productos</span><span class="metric-icon purple">▤</span></div>
+        <div class="metric-value">{{ totalProducts }}</div>
+        <div class="metric-foot">Referencias en el inventario</div>
+      </article>
+      <article class="metric-card">
+        <div class="metric-top"><span>Valor del inventario</span><span class="metric-icon green">$</span></div>
+        <div class="metric-value">{{ formatCurrency(totalValue) }}</div>
+        <div class="metric-foot">Valor estimado al precio unitario</div>
+      </article>
+      <article class="metric-card">
+        <div class="metric-top"><span>Stock bajo</span><span class="metric-icon amber">⚠</span></div>
+        <div class="metric-value">{{ lowStockCount }}</div>
+        <div class="metric-foot">Productos que requieren atención</div>
+      </article>
+      <article class="metric-card">
+        <div class="metric-top"><span>Agotados</span><span class="metric-icon red">!</span></div>
+        <div class="metric-value">{{ outOfStockCount }}</div>
+        <div class="metric-foot">Productos sin existencias</div>
+      </article>
+    </section>
+
+    <section class="content-grid">
+      <article class="panel inventory-panel" id="inventory">
+        <div class="panel-heading">
+          <div>
+            <h3>Inventario de productos</h3>
+            <p>Consulta y administra las existencias de tu negocio.</p>
+          </div>
+          <label class="button button-outline import-button">
+            ↑ Importar CSV
+            <input type="file" accept=".csv,text/csv" (change)="importCsv($event)" hidden>
+          </label>
+        </div>
+
+        <div class="toolbar">
+          <div class="search-box">
+            <span>⌕</span>
+            <input type="search" placeholder="Buscar producto, SKU o categoría..." (input)="onSearch($event)">
+          </div>
+          <div class="filters">
+            <button [class.selected]="activeFilter === 'all'" (click)="setFilter('all')">Todos</button>
+            <button [class.selected]="activeFilter === 'low'" (click)="setFilter('low')">Stock bajo</button>
+            <button [class.selected]="activeFilter === 'out'" (click)="setFilter('out')">Agotados</button>
+          </div>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>PRODUCTO</th>
+                <th>CATEGORÍA</th>
+                <th>STOCK ACTUAL</th>
+                <th>PRECIO</th>
+                <th>ESTADO</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (product of filteredProducts; track product.id) {
+                <tr>
+                  <td>
+                    <div class="product-name">{{ product.name }}</div>
+                    <div class="product-sku">{{ product.sku }}</div>
+                  </td>
+                  <td><span class="category-tag">{{ product.category }}</span></td>
+                  <td>
+                    <div class="stock-number">{{ product.stock }} <small>uds.</small></div>
+                    <div class="stock-min">Mínimo: {{ product.minStock }}</div>
+                  </td>
+                  <td class="price">{{ formatCurrency(product.price) }}</td>
+                  <td>
+                    <span class="status" [class.status-good]="product.stock > product.minStock" [class.status-low]="product.stock > 0 && product.stock <= product.minStock" [class.status-out]="product.stock === 0">
+                      <span></span>{{ getStatus(product) }}
+                    </span>
+                  </td>
+                </tr>
+              } @empty {
+                <tr><td colspan="5" class="empty-state">No se encontraron productos con esos criterios.</td></tr>
+              }
+            </tbody>
+          </table>
+        </div>
+
+
+<section class="panel ai-insights">
+  <div class="panel-heading">
+    <div>
+      <div class="recommendation-label">
+        STOCKPILOT INTELLIGENCE
+      </div>
+      <h3>Asistente inteligente</h3>
+      <p>Análisis automático del inventario actual</p>
+    </div>
+
+    <span class="ai-badge">AI · DEMO</span>
+  </div>
+
+  <div class="ai-metrics">
+    <div>
+      <span>Productos críticos</span>
+      <strong>{{ criticalStockCount }}</strong>
+    </div>
+
+    <div>
+      <span>Coste de reposición</span>
+      <strong>{{ formatCurrency(estimatedRestockCost) }}</strong>
+    </div>
+  </div>
+
+  <div class="ai-insight-list">
+    @for (insight of aiInsights; track insight) {
+      <div class="ai-insight">
+        <span aria-hidden="true">✦</span>
+        <p>{{ insight }}</p>
+      </div>
+    }
+  </div>
+
+  <div class="panel-heading">
+    <div>
+      <h3>Recomendaciones de compra</h3>
+      <p>Ordenadas por prioridad</p>
+    </div>
+  </div>
+
+  <div class="ai-recommendations">
+    @for (
+      product of restockProducts;
+      track product.id
+    ) {
+      <article class="ai-product">
+        <div class="ai-product-info">
+          <strong>{{ product.name }}</strong>
+          <span>{{ product.supplier }} · {{ product.sku }}</span>
+          <p>{{ getRestockReason(product) }}</p>
+        </div>
+
+        <div class="ai-product-action">
+          <span
+            class="ai-priority"
+            [class.priority-urgent]="getPriority(product) === 'Urgente'"
+            [class.priority-high]="getPriority(product) === 'Alta'"
+          >
+            {{ getPriority(product) }}
+          </span>
+
+          <strong>+{{ getRestockQuantity(product) }} uds.</strong>
+
+          <span>{{ formatCurrency(getRestockCost(product)) }}</span>
+        </div>
+      </article>
+    } @empty {
+      <p class="empty-state">
+        No hay productos que necesiten reposición.
+      </p>
+    }
+  </div>
+</section>
+
+
+        <div class="table-footer">Mostrando {{ filteredProducts.length }} de {{ totalProducts }} productos</div>
+      </article>
+
+      <aside class="panel restock-panel" id="restock">
+        <div class="panel-heading">
+          <div>
+            <div class="recommendation-label">✦ RECOMENDACIONES IA</div>
+            <h3>Reposición sugerida</h3>
+            <p>Productos que necesitan atención.</p>
+          </div>
+        </div>
+
+        <div class="restock-summary">
+          <div class="summary-symbol">↗</div>
+          <div><strong>{{ restockProducts.length }} productos</strong><span>requieren reposición</span></div>
+        </div>
+
+        <div class="restock-list">
+          @for (product of restockProducts; track product.id) {
+            <div class="restock-item">
+              <div class="restock-info">
+                <strong>{{ product.name }}</strong>
+                <span>{{ product.sku }} · Stock: {{ product.stock }}</span>
+              </div>
+              <div class="restock-quantity">
+                <strong>+{{ getRestockQuantity(product) }}</strong>
+                <span>unidades</span>
+              </div>
+            </div>
+          } @empty {
+            <p class="empty-state">No hay productos que necesiten reposición.</p>
+          }
+        </div>
+
+        <div class="recommendation-note">
+          <span>✦</span>
+          <p>Las cantidades se calculan para recuperar el doble del stock mínimo. Son sugerencias basadas en reglas, no predicciones de IA.</p>
+        </div>
+        <button class="button button-dark full-button" (click)="exportCsv()">↓ Descargar inventario CSV</button>
+      </aside>
+    </section>
+
+    <footer class="page-footer">
+      <span>StockPilot AI · Panel de inventario</span>
+      <span>Datos de demostración · Ferretería</span>
+    </footer>
+  </main>
+</div>
